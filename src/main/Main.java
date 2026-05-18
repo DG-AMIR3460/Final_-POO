@@ -1,22 +1,22 @@
-﻿package main;
+package main;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-import main.controller.AppointmentController;
-import main.controller.AuthController;
-import main.controller.DoctorController;
-import main.controller.HospitalizationController;
-import main.controller.PatientController;
-import main.controller.PrescriptionController;
-import main.model.business.AppointmentManager;
-import main.model.business.AuthManager;
-import main.model.business.HospitalizationManager;
-import main.model.repositories.AppointmentRepository;
-import main.model.repositories.HospitalizationRepository;
-import main.model.repositories.IAppointmentRepository;
-import main.model.repositories.IHospitalizationRepository;
-import main.model.repositories.IUserRepository;
-import main.model.repositories.UserRepository;
-import main.view.LoginView;
+import core.controller.AppointmentController;
+import core.controller.AuthController;
+import core.controller.DoctorController;
+import core.controller.HospitalizationController;
+import core.controller.PatientController;
+import core.controller.PrescriptionController;
+import core.model.business.AppointmentManager;
+import core.model.business.AuthManager;
+import core.model.business.HospitalizationManager;
+import core.model.repositories.AppointmentRepository;
+import core.model.repositories.HospitalizationRepository;
+import core.model.repositories.IAppointmentRepository;
+import core.model.repositories.IHospitalizationRepository;
+import core.model.repositories.IUserRepository;
+import core.model.repositories.UserRepository;
+import core.view.LoginView;
 
 import javax.swing.*;
 
