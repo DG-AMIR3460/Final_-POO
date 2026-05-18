@@ -1,16 +1,16 @@
 package packagee.controller;
 
 import packagee.model.entities.User;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONObject;
 import java.util.Optional;
 
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class AppointmentRepository implements Observable {
+public class AppointmentRepository implements IAppointmentRepository {
 
     private final List<Appointment> appointments = new ArrayList<>();
     private final List<ModelObserver> observers = new ArrayList<>();

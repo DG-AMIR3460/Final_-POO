@@ -2,7 +2,7 @@ package packagee.controller;
 
 import packagee.model.entities.Patient;
 import packagee.model.entities.User;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,9 +18,9 @@ public class PatientController {
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10}$");
     private static final Pattern DATE_PATTERN  = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
-    public PatientController(UserRepository userRepository) {
+    public PatientController(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

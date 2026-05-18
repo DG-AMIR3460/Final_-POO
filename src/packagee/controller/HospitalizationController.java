@@ -9,9 +9,9 @@ import packagee.model.enums.AppointmentStatus;
 import packagee.model.enums.HospitalizationStatus;
 import packagee.model.enums.RoomType;
 import packagee.model.observers.ModelObserver;
-import packagee.model.repositories.AppointmentRepository;
-import packagee.model.repositories.HospitalizationRepository;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IAppointmentRepository;
+import packagee.model.repositories.IHospitalizationRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,13 +26,13 @@ public class HospitalizationController {
 
     private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
-    private final HospitalizationRepository hospitalizationRepository;
-    private final UserRepository userRepository;
-    private final AppointmentRepository appointmentRepository;
+    private final IHospitalizationRepository hospitalizationRepository;
+    private final IUserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
 
-    public HospitalizationController(HospitalizationRepository hospitalizationRepository,
-                                     UserRepository userRepository,
-                                     AppointmentRepository appointmentRepository) {
+    public HospitalizationController(IHospitalizationRepository hospitalizationRepository,
+                                     IUserRepository userRepository,
+                                     IAppointmentRepository appointmentRepository) {
         this.hospitalizationRepository = hospitalizationRepository;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;

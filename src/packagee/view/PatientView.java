@@ -14,7 +14,7 @@ import packagee.model.entities.User;
 import packagee.model.enums.RoomType;
 import packagee.model.enums.Specialty;
 import packagee.model.observers.ModelObserver;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,7 +28,7 @@ public class PatientView extends JFrame implements ModelObserver {
     private int dragX, dragY;
     private final User loginUser;
     private final Patient patient;
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
     private final PatientController patientController;
     private final DoctorController doctorController;
     private final AppointmentController appointmentController;
@@ -102,7 +102,7 @@ public class PatientView extends JFrame implements ModelObserver {
                        AppointmentController appointmentController,
                        HospitalizationController hospitalizationController,
                        PrescriptionController prescriptionController,
-                       UserRepository userRepository) {
+                       IUserRepository userRepository) {
         this.loginUser = loginUser;
         this.patient = patient;
         this.patientController = patientController;

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class UserRepository implements Observable {
+public class UserRepository implements IUserRepository {
 
     private final List<User> users = new ArrayList<>();
     private final List<ModelObserver> observers = new ArrayList<>();

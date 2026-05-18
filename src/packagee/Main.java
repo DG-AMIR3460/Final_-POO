@@ -9,6 +9,9 @@ import packagee.controller.PatientController;
 import packagee.controller.PrescriptionController;
 import packagee.model.repositories.AppointmentRepository;
 import packagee.model.repositories.HospitalizationRepository;
+import packagee.model.repositories.IAppointmentRepository;
+import packagee.model.repositories.IHospitalizationRepository;
+import packagee.model.repositories.IUserRepository;
 import packagee.model.repositories.UserRepository;
 import packagee.view.LoginView;
 
@@ -24,9 +27,9 @@ public class Main {
         }
 
         SwingUtilities.invokeLater(() -> {
-            UserRepository userRepository = new UserRepository();
-            AppointmentRepository appointmentRepository = new AppointmentRepository();
-            HospitalizationRepository hospitalizationRepository = new HospitalizationRepository();
+            IUserRepository userRepository = new UserRepository();
+            IAppointmentRepository appointmentRepository = new AppointmentRepository();
+            IHospitalizationRepository hospitalizationRepository = new HospitalizationRepository();
 
             AuthController authController = new AuthController(userRepository);
             PatientController patientController = new PatientController(userRepository);

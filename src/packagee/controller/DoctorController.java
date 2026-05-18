@@ -3,7 +3,7 @@ package packagee.controller;
 import packagee.model.entities.Doctor;
 import packagee.model.entities.User;
 import packagee.model.enums.Specialty;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,9 +16,9 @@ public class DoctorController {
     private static final Pattern LICENCE_PATTERN = Pattern.compile("^L-\\d{10} MTL$");
     private static final Pattern OFFICE_PATTERN  = Pattern.compile("^O-\\d{3}$");
 
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
-    public DoctorController(UserRepository userRepository) {
+    public DoctorController(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

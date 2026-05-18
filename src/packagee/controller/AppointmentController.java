@@ -7,8 +7,8 @@ import packagee.model.entities.User;
 import packagee.model.enums.AppointmentStatus;
 import packagee.model.enums.Specialty;
 import packagee.model.observers.ModelObserver;
-import packagee.model.repositories.AppointmentRepository;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IAppointmentRepository;
+import packagee.model.repositories.IUserRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,10 +28,10 @@ public class AppointmentController {
     private static final Pattern TIME_PATTERN = Pattern.compile("^\\d{2}:\\d{2}$");
     private static final Set<Integer> VALID_MINUTES = Set.of(0, 15, 30, 45);
 
-    private final AppointmentRepository appointmentRepository;
-    private final UserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
+    private final IUserRepository userRepository;
 
-    public AppointmentController(AppointmentRepository appointmentRepository, UserRepository userRepository) {
+    public AppointmentController(IAppointmentRepository appointmentRepository, IUserRepository userRepository) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
     }

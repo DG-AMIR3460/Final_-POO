@@ -3,7 +3,7 @@ package packagee.controller;
 import packagee.model.entities.Appointment;
 import packagee.model.entities.Prescription;
 import packagee.model.enums.AppointmentStatus;
-import packagee.model.repositories.AppointmentRepository;
+import packagee.model.repositories.IAppointmentRepository;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,9 +12,9 @@ import java.util.Optional;
 
 public class PrescriptionController {
 
-    private final AppointmentRepository appointmentRepository;
+    private final IAppointmentRepository appointmentRepository;
 
-    public PrescriptionController(AppointmentRepository appointmentRepository) {
+    public PrescriptionController(IAppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
 

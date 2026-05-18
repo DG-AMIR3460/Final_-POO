@@ -11,7 +11,7 @@ import packagee.model.entities.Administrator;
 import packagee.model.entities.Doctor;
 import packagee.model.entities.Patient;
 import packagee.model.entities.User;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +26,7 @@ public class LoginView extends JFrame {
     private final AppointmentController appointmentController;
     private final HospitalizationController hospitalizationController;
     private final PrescriptionController prescriptionController;
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
     // Title bar
     private PanelRound pnlMain;
@@ -73,7 +73,7 @@ public class LoginView extends JFrame {
                      DoctorController doctorController, AppointmentController appointmentController,
                      HospitalizationController hospitalizationController,
                      PrescriptionController prescriptionController,
-                     UserRepository userRepository) {
+                     IUserRepository userRepository) {
         this.authController = authController;
         this.patientController = patientController;
         this.doctorController = doctorController;

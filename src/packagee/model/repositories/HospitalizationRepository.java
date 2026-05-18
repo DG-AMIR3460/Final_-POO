@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class HospitalizationRepository implements Observable {
+public class HospitalizationRepository implements IHospitalizationRepository {
 
     private final List<Hospitalization> hospitalizations = new ArrayList<>();
     private final List<ModelObserver> observers = new ArrayList<>();

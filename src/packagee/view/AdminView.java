@@ -12,7 +12,7 @@ import packagee.model.entities.Patient;
 import packagee.model.entities.User;
 import packagee.model.enums.Specialty;
 import packagee.model.observers.ModelObserver;
-import packagee.model.repositories.UserRepository;
+import packagee.model.repositories.IUserRepository;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +26,7 @@ public class AdminView extends JFrame implements ModelObserver {
     private final AppointmentController appointmentController;
     private final HospitalizationController hospitalizationController;
     private final PrescriptionController prescriptionController;
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
     // Title bar
     private PanelRound pnlMain;
@@ -61,7 +61,7 @@ public class AdminView extends JFrame implements ModelObserver {
     public AdminView(Administrator admin, DoctorController doctorController,
                      PatientController patientController, AppointmentController appointmentController,
                      HospitalizationController hospitalizationController,
-                     PrescriptionController prescriptionController, UserRepository userRepository) {
+                     PrescriptionController prescriptionController, IUserRepository userRepository) {
         this.admin = admin;
         this.doctorController = doctorController;
         this.patientController = patientController;
