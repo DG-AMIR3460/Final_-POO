@@ -1,0 +1,13 @@
+# Archivos compilados
+build/
+dist/
+
+# Carpeta de Claude (herramienta de desarrollo)
+.claude/
+
+# NetBeans
+nbproject/private/
+nbproject/Makefile-*.mk
+nbproject/Package-*.bash
+nbbuild/
+nbdist/
