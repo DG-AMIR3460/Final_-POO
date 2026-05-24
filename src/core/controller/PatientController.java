@@ -12,6 +12,10 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+/**
+ * Controlador encargado de gestionar el registro, actualización
+ * y consulta de información de los pacientes en el sistema.
+ */
 public class PatientController {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@]+@[^@]+\\.com$");
@@ -23,40 +27,50 @@ public class PatientController {
     public PatientController(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
-
+    
+    // Registra un nuevo paciente en el sistema
+    
     public Response register(String idStr, String username, String firstname, String lastname,
                              String password, String confirm, String email,
                              String birthdateStr, String genderStr, String phoneStr, String address) {
+        //Validacion de datos
         Response v = validatePatientData(null, idStr, username, firstname, lastname,
                 password, confirm, email, birthdateStr, genderStr, phoneStr, address);
         if (!v.isOk()) return v;
-
+        
+        // Conversión de los campos necesarios a sus tipos correspondientes
         long id = Long.parseLong(idStr);
         LocalDate birthdate = LocalDate.parse(birthdateStr);
         long phone = Long.parseLong(phoneStr);
         boolean gender = "Male".equalsIgnoreCase(genderStr);
-
+        
+        // Se crea el paciente y se agrega al repositorio
         Patient patient = new Patient(id, username, firstname, lastname, password,
                 email, birthdate, gender, phone, address);
         userRepository.add(patient);
         return new Response(StatusCode.OK, "Patient registered successfully.");
     }
-
+    
+    //Actualiza datos de un paciente existente
     public Response update(long currentUserId, String username, String firstname, String lastname,
                            String password, String confirm, String email,
                            String birthdateStr, String genderStr, String phoneStr, String address) {
+        //Verifica que el usuario exista y sea un paciente
         Optional<User> opt = userRepository.findById(currentUserId);
         if (opt.isEmpty() || !(opt.get() instanceof Patient p)) {
             return new Response(StatusCode.NOT_FOUND, "Patient not found.");
         }
+        //Valida los nuevos datos
         Response v = validatePatientData(currentUserId, String.valueOf(p.getId()), username, firstname,
                 lastname, password, confirm, email, birthdateStr, genderStr, phoneStr, address);
         if (!v.isOk()) return v;
-
+        
+        //Verifica el username
         if (!p.getUsername().equals(username) && userRepository.usernameExists(username)) {
             return new Response(StatusCode.CONFLICT, "Username already taken.");
         }
-
+        
+        // Se actualizan los campos del paciente con los nuevos valores
         p.setUsername(username);
         p.setFirstname(firstname);
         p.setLastname(lastname);
@@ -66,10 +80,13 @@ public class PatientController {
         p.setGender("Male".equalsIgnoreCase(genderStr));
         p.setPhone(Long.parseLong(phoneStr));
         p.setAddress(address);
+        
+        // Se notifica a los observadores del repositorio (patrón Observer)
         userRepository.notifyObservers();
         return new Response(StatusCode.OK, "Patient info updated successfully.");
     }
-
+    
+    //Obtiene informacion de un paciente por el ID
     public Response getInfo(long patientId) {
         Optional<User> opt = userRepository.findById(patientId);
         if (opt.isEmpty() || !(opt.get() instanceof Patient p)) {
@@ -84,7 +101,9 @@ public class PatientController {
         userRepository.getPatients().forEach(p -> arr.put(serializePatient(p)));
         return new Response(StatusCode.OK, "OK", arr);
     }
-
+    
+    
+    //Valida los datos de un paciente
     private Response validatePatientData(Long currentId, String idStr, String username,
                                          String firstname, String lastname,
                                          String password, String confirm,
