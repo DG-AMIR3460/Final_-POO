@@ -26,8 +26,13 @@ public class AppointmentManager {
 
     // Verifica solapamiento de intervalos de 15 minutos — dos citas se solapan si [s1, e1) y [s2, e2) se intersectan
     public boolean isDoctorAvailable(Doctor doctor, LocalDateTime requested) {
+        return isDoctorAvailable(doctor, requested, null);
+    }
+
+    public boolean isDoctorAvailable(Doctor doctor, LocalDateTime requested, Appointment ignoredAppointment) {
         LocalDateTime end = requested.plusMinutes(15);
         return doctor.getAppointments().stream()
+                .filter(a -> ignoredAppointment == null || !a.getId().equals(ignoredAppointment.getId()))
                 // Las citas canceladas o completadas no bloquean el horario del doctor
                 .filter(a -> a.getStatus() != AppointmentStatus.CANCELED
                           && a.getStatus() != AppointmentStatus.COMPLETED)

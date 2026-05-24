@@ -135,6 +135,8 @@ public class AppointmentController {
 
         Appointment a = opt.get();
         LocalDateTime newDt = LocalDateTime.of(a.getDatetime().toLocalDate(), newTime);
+        if (!appointmentManager.isDoctorAvailable(a.getDoctor(), newDt, a))
+            return new Response(StatusCode.CONFLICT, "Doctor is not available at the requested time.");
         appointmentManager.reschedule(a, newDt, rescheduleReason);
         return new Response(StatusCode.OK, "Appointment rescheduled.");
     }
