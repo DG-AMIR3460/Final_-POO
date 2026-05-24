@@ -11,13 +11,7 @@ import core.model.repositories.IUserRepository;
 
 import java.time.LocalDateTime;
 
-/**
- * Logica de negocio de citas medicas.
- *
- * S - Single Responsibility: solo maneja reglas relacionadas a citas.
- * D - Dependency Inversion: depende de IAppointmentRepository e IUserRepository (interfaces).
- * O - Open/Closed: agregar nuevas reglas (ej. limite de citas por dia) no requiere modificar controladores.
- */
+
 public class AppointmentManager {
 
     private final IAppointmentRepository appointmentRepository;
@@ -29,13 +23,7 @@ public class AppointmentManager {
         this.userRepository = userRepository;
     }
 
-    // -------------------------------------------------------------------------
-    // Reglas de negocio
-    // -------------------------------------------------------------------------
-
-    /**
-     * Regla: un doctor no puede tener dos citas solapadas (intervalos de 15 min).
-     */
+   
     public boolean isDoctorAvailable(Doctor doctor, LocalDateTime requested) {
         LocalDateTime end = requested.plusMinutes(15);
         return doctor.getAppointments().stream()

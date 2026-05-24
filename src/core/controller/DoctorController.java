@@ -13,9 +13,11 @@ import java.util.regex.Pattern;
 
 public class DoctorController {
 
+    // Formato estricto del número de licencia y consultorio — se validan con regex para no depender de lógica condicional larga
     private static final Pattern LICENCE_PATTERN = Pattern.compile("^L-\\d{10} MTL$");
     private static final Pattern OFFICE_PATTERN  = Pattern.compile("^O-\\d{3}$");
 
+    // Solo necesita el repositorio de usuarios porque Doctor extiende User — la jerarquía de herencia lo justifica
     private final IUserRepository userRepository;
 
     public DoctorController(IUserRepository userRepository) {
@@ -25,6 +27,7 @@ public class DoctorController {
     public Response register(String idStr, String username, String firstname, String lastname,
                              String password, String confirm, String specialtyDisplay,
                              String licenceNumber, String assignedOffice) {
+        // currentId null le indica al validador que es un registro nuevo, no una actualización
         Response v = validateDoctorData(null, idStr, username, firstname, lastname,
                 password, confirm, specialtyDisplay, licenceNumber, assignedOffice);
         if (!v.isOk()) return v;
@@ -40,18 +43,22 @@ public class DoctorController {
     public Response update(long currentDoctorId, String username, String firstname, String lastname,
                            String password, String confirm, String specialtyDisplay,
                            String licenceNumber, String assignedOffice) {
+        // Pattern matching con instanceof para hacer el downcast de User a Doctor de forma segura
         Optional<User> opt = userRepository.findById(currentDoctorId);
         if (opt.isEmpty() || !(opt.get() instanceof Doctor d)) {
             return new Response(StatusCode.NOT_FOUND, "Doctor not found.");
         }
+        // Se pasa currentDoctorId para que el validador omita la verificación de ID duplicado sobre sí mismo
         Response v = validateDoctorData(currentDoctorId, String.valueOf(d.getId()), username, firstname,
                 lastname, password, confirm, specialtyDisplay, licenceNumber, assignedOffice);
         if (!v.isOk()) return v;
 
+        // El username solo se verifica contra duplicados si realmente cambió
         if (!d.getUsername().equals(username) && userRepository.usernameExists(username)) {
             return new Response(StatusCode.CONFLICT, "Username already taken.");
         }
 
+        // Mutación directa sobre la entidad recuperada del repositorio — no se crea un objeto nuevo
         d.setUsername(username);
         d.setFirstname(firstname);
         d.setLastname(lastname);
@@ -59,6 +66,7 @@ public class DoctorController {
         d.setSpecialty(Specialty.fromDisplayName(specialtyDisplay));
         d.setLicenceNumber(licenceNumber);
         d.setAssignedOffice(assignedOffice);
+        // Se notifica manualmente porque la mutación no pasa por el Manager, sino directo al repositorio
         userRepository.notifyObservers();
         return new Response(StatusCode.OK, "Doctor info updated successfully.");
     }
@@ -73,10 +81,12 @@ public class DoctorController {
 
     public Response getAllDoctorsJson() {
         JSONArray arr = new JSONArray();
+        // getDoctors() ya filtra por tipo en el repositorio — no hace falta instanceof aquí
         userRepository.getDoctors().forEach(d -> arr.put(serializeDoctor(d)));
         return new Response(StatusCode.OK, "OK", arr);
     }
 
+    // currentId null = registro nuevo; currentId presente = actualización — un solo método maneja ambos casos
     private Response validateDoctorData(Long currentId, String idStr, String username,
                                         String firstname, String lastname,
                                         String password, String confirm,
@@ -92,14 +102,17 @@ public class DoctorController {
         try { id = Long.parseLong(idStr); } catch (NumberFormatException e) {
             return new Response(StatusCode.BAD_REQUEST, "ID must be numeric.");
         }
+        // Regla de negocio: el ID debe ser exactamente de 12 dígitos y positivo
         if (id <= 0 || String.valueOf(id).length() != 12)
             return new Response(StatusCode.BAD_REQUEST, "ID must be a positive 12-digit number.");
 
+        // Las verificaciones de duplicado solo aplican al registrar, no al actualizar
         if (currentId == null && userRepository.idExists(id))
             return new Response(StatusCode.CONFLICT, "ID already in use.");
         if (currentId == null && userRepository.usernameExists(username))
             return new Response(StatusCode.CONFLICT, "Username already taken.");
 
+        // "Select one" es el valor por defecto del combo en la vista — se trata como campo vacío
         if ("Select one".equalsIgnoreCase(specialtyDisplay))
             return new Response(StatusCode.BAD_REQUEST, "Specialty is required.");
 
@@ -116,6 +129,7 @@ public class DoctorController {
         return new Response(StatusCode.OK, "OK");
     }
 
+    // static porque no usa estado del Controller; se reutiliza desde AppointmentController sin instanciar
     public static JSONObject serializeDoctor(Doctor d) {
         JSONObject o = new JSONObject();
         o.put("id", d.getId());
