@@ -27,50 +27,46 @@ public class PatientController {
     public PatientController(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    
-    // Registra un nuevo paciente en el sistema
-    
+
     public Response register(String idStr, String username, String firstname, String lastname,
                              String password, String confirm, String email,
                              String birthdateStr, String genderStr, String phoneStr, String address) {
-        //Validacion de datos
+        // currentId null le indica al validador que es registro nuevo — misma estrategia que en DoctorController
         Response v = validatePatientData(null, idStr, username, firstname, lastname,
                 password, confirm, email, birthdateStr, genderStr, phoneStr, address);
         if (!v.isOk()) return v;
-        
-        // Conversión de los campos necesarios a sus tipos correspondientes
+
         long id = Long.parseLong(idStr);
         LocalDate birthdate = LocalDate.parse(birthdateStr);
         long phone = Long.parseLong(phoneStr);
+        // El género se mapea de String a boolean para evitar dependencia de un enum externo
         boolean gender = "Male".equalsIgnoreCase(genderStr);
-        
-        // Se crea el paciente y se agrega al repositorio
+
         Patient patient = new Patient(id, username, firstname, lastname, password,
                 email, birthdate, gender, phone, address);
         userRepository.add(patient);
         return new Response(StatusCode.OK, "Patient registered successfully.");
     }
-    
-    //Actualiza datos de un paciente existente
+
     public Response update(long currentUserId, String username, String firstname, String lastname,
                            String password, String confirm, String email,
                            String birthdateStr, String genderStr, String phoneStr, String address) {
-        //Verifica que el usuario exista y sea un paciente
+        // Pattern matching con instanceof — downcast seguro de User a Patient en una sola línea
         Optional<User> opt = userRepository.findById(currentUserId);
         if (opt.isEmpty() || !(opt.get() instanceof Patient p)) {
             return new Response(StatusCode.NOT_FOUND, "Patient not found.");
         }
-        //Valida los nuevos datos
+        // Se pasa currentUserId para que el validador salte las verificaciones de duplicado sobre sí mismo
         Response v = validatePatientData(currentUserId, String.valueOf(p.getId()), username, firstname,
                 lastname, password, confirm, email, birthdateStr, genderStr, phoneStr, address);
         if (!v.isOk()) return v;
-        
-        //Verifica el username
+
+        // El username solo se verifica contra duplicados si efectivamente cambió
         if (!p.getUsername().equals(username) && userRepository.usernameExists(username)) {
             return new Response(StatusCode.CONFLICT, "Username already taken.");
         }
-        
-        // Se actualizan los campos del paciente con los nuevos valores
+
+        // Mutación directa sobre la entidad — no se instancia un objeto nuevo para la actualización
         p.setUsername(username);
         p.setFirstname(firstname);
         p.setLastname(lastname);
@@ -80,13 +76,12 @@ public class PatientController {
         p.setGender("Male".equalsIgnoreCase(genderStr));
         p.setPhone(Long.parseLong(phoneStr));
         p.setAddress(address);
-        
-        // Se notifica a los observadores del repositorio (patrón Observer)
+
+        // Se notifica manualmente porque la mutación no pasa por ningún Manager que lo haga automáticamente
         userRepository.notifyObservers();
         return new Response(StatusCode.OK, "Patient info updated successfully.");
     }
-    
-    //Obtiene informacion de un paciente por el ID
+
     public Response getInfo(long patientId) {
         Optional<User> opt = userRepository.findById(patientId);
         if (opt.isEmpty() || !(opt.get() instanceof Patient p)) {
@@ -98,12 +93,12 @@ public class PatientController {
 
     public Response getAllPatientsJson() {
         JSONArray arr = new JSONArray();
+        // getPatients() ya filtra por tipo en el repositorio — no hace falta instanceof aquí
         userRepository.getPatients().forEach(p -> arr.put(serializePatient(p)));
         return new Response(StatusCode.OK, "OK", arr);
     }
-    
-    
-    //Valida los datos de un paciente
+
+    // currentId null = registro nuevo; currentId presente = actualización — un solo método cubre ambos flujos
     private Response validatePatientData(Long currentId, String idStr, String username,
                                          String firstname, String lastname,
                                          String password, String confirm,
@@ -123,6 +118,7 @@ public class PatientController {
         if (id <= 0 || String.valueOf(id).length() != 12)
             return new Response(StatusCode.BAD_REQUEST, "ID must be a positive 12-digit number.");
 
+        // Las verificaciones de duplicado solo corren al registrar, nunca al actualizar
         if (currentId == null && userRepository.idExists(id))
             return new Response(StatusCode.CONFLICT, "ID already in use.");
 
@@ -135,18 +131,21 @@ public class PatientController {
         if (!PHONE_PATTERN.matcher(phoneStr).matches())
             return new Response(StatusCode.BAD_REQUEST, "Phone must have exactly 10 digits.");
 
+        // Doble validación: primero formato por regex, luego parseo real — el regex no garantiza fechas válidas como 2024-02-31
         if (!DATE_PATTERN.matcher(birthdateStr).matches())
             return new Response(StatusCode.BAD_REQUEST, "Birthdate must follow YYYY-MM-DD format.");
         try { LocalDate.parse(birthdateStr); } catch (DateTimeParseException e) {
             return new Response(StatusCode.BAD_REQUEST, "Birthdate is not a valid date.");
         }
 
+        // "Select one" es el valor por defecto del combo en la vista — se trata como campo vacío
         if ("Select one".equalsIgnoreCase(genderStr))
             return new Response(StatusCode.BAD_REQUEST, "Gender is required.");
 
         return new Response(StatusCode.OK, "OK");
     }
 
+    // static porque no usa estado del Controller; el boolean de género se revierte a String para el cliente
     public static JSONObject serializePatient(Patient p) {
         JSONObject o = new JSONObject();
         o.put("id", p.getId());

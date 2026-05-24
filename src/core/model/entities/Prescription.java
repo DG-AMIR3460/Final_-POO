@@ -2,6 +2,7 @@ package core.model.entities;
 
 public class Prescription {
 
+    // Todos los campos son final — una prescripción es inmutable por diseño; no tiene sentido modificar una orden médica emitida
     private final Appointment appointment;
     private final String medicationName;
     private final double dose;
@@ -20,6 +21,7 @@ public class Prescription {
         this.treatmentDuration = treatmentDuration;
         this.additionalInstructions = additionalInstructions;
         this.frequency = frequency;
+        // Registro bidireccional desde el constructor — la prescripción se enlaza a su cita sin que el Manager intervenga
         appointment.addPrescription(this);
     }
 

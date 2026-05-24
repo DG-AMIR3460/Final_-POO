@@ -31,9 +31,7 @@ public class HospitalizationManager {
         this.appointmentRepository = appointmentRepository;
     }
 
-    // -------------------------------------------------------------------------
     // Creacion (3 escenarios de negocio distintos)
-    // -------------------------------------------------------------------------
 
     /**
      * Escenario 1: Paciente solicita hospitalizacion → estado REQUESTED (espera aprobacion del doctor).
@@ -73,9 +71,7 @@ public class HospitalizationManager {
         return h;
     }
 
-    // -------------------------------------------------------------------------
     // Transiciones de estado (reglas de negocio)
-    // -------------------------------------------------------------------------
 
     /** Regla: solo hospitalizaciones REQUESTED pueden aprobarse → pasan a ONGOING. */
     public boolean approve(Hospitalization h) {
@@ -93,9 +89,7 @@ public class HospitalizationManager {
         return true;
     }
 
-    // -------------------------------------------------------------------------
     // Observer delegation
-    // -------------------------------------------------------------------------
 
     public void addObserver(ModelObserver o)    { hospitalizationRepository.addObserver(o); }
     public void removeObserver(ModelObserver o) { hospitalizationRepository.removeObserver(o); }

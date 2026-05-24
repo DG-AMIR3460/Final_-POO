@@ -26,9 +26,11 @@ public class UserRepository implements IUserRepository {
 
     public UserRepository() {
         loadFromJson();
+        // El administrador por defecto se agrega en código para garantizar que siempre exista, independientemente del JSON
         users.add(new Administrator(0L, "admin", "Admin", "System", "admin123"));
     }
 
+    // Deserialización polimórfica: el campo "type" del JSON decide qué subclase de User instanciar
     private void loadFromJson() {
         try {
             String content = new String(Files.readAllBytes(Paths.get("json/users.json")));
@@ -41,6 +43,7 @@ public class UserRepository implements IUserRepository {
                 String firstname = obj.getString("firstname");
                 String lastname = obj.getString("lastname");
                 String password = obj.getString("password");
+                // El switch crea la subclase correcta según el tipo — patrón de fábrica implícito dentro del repositorio
                 switch (type) {
                     case "admin" -> users.add(new Administrator(id, username, firstname, lastname, password));
                     case "patient" -> {
@@ -53,6 +56,7 @@ public class UserRepository implements IUserRepository {
                                 email, birthdate, gender, phone, address));
                     }
                     case "doctor" -> {
+                        // fromJson maneja alias abreviados del JSON que no coinciden exactamente con los nombres del enum
                         Specialty specialty = Specialty.fromJson(obj.getString("specialty"));
                         String licence = obj.getString("licenceNumber");
                         String office = obj.getString("assignedOffice");
@@ -62,6 +66,7 @@ public class UserRepository implements IUserRepository {
                 }
             }
         } catch (IOException e) {
+            // Fallo silencioso con log — el sistema arranca vacío en lugar de lanzar excepción y bloquear la app
             System.err.println("Could not load users.json: " + e.getMessage());
         }
     }
@@ -82,8 +87,10 @@ public class UserRepository implements IUserRepository {
         return users.stream().anyMatch(u -> u.getId() == id);
     }
 
+    // Copia defensiva para que el llamador no pueda modificar la lista interna
     public List<User> getAll() { return new ArrayList<>(users); }
 
+    // El filtro por instanceof aprovecha el polimorfismo de subtipo para extraer solo la subclase requerida
     public List<Doctor> getDoctors() {
         return users.stream()
                 .filter(u -> u instanceof Doctor)
@@ -100,6 +107,7 @@ public class UserRepository implements IUserRepository {
 
     public boolean add(User user) {
         boolean added = users.add(user);
+        // Solo notifica si el usuario fue agregado efectivamente — evita disparar actualizaciones de vista innecesarias
         if (added) notifyObservers();
         return added;
     }

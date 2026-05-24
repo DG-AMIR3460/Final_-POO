@@ -21,18 +21,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-/**
- * Conecta las vistas de hospitalizacion con la logica del modelo.
- * S - Single Responsibility: parseo de entradas y traduccion a Response.
- * D - Dependency Inversion: depende de HospitalizationManager e interfaces de repositorio.
- *
- * HospitalizationManager: contiene las REGLAS DE NEGOCIO (3 escenarios de creacion, approve, deny).
- * IHospitalizationRepository / IUserRepository / IAppointmentRepository: acceso a datos.
- */
+
 public class HospitalizationController {
 
     private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
+    // Necesita cuatro dependencias porque las hospitalizaciones cruzan tres dominios: usuarios, citas y el propio repositorio
     private final HospitalizationManager hospitalizationManager;
     private final IHospitalizationRepository hospitalizationRepository;
     private final IUserRepository userRepository;
@@ -51,6 +45,7 @@ public class HospitalizationController {
     /** Escenario 1: Paciente solicita hospitalizacion (queda en REQUESTED). */
     public Response request(long patientId, long doctorId, String dateStr,
                             String reason, String roomTypeStr, String observations) {
+        // parseDate retorna null si el formato o el valor son inválidos — evita try/catch en cada método
         LocalDate date = parseDate(dateStr);
         if (date == null) return new Response(StatusCode.BAD_REQUEST, "Date must follow YYYY-MM-DD format.");
 
@@ -66,6 +61,7 @@ public class HospitalizationController {
         try { roomType = RoomType.fromDisplayName(roomTypeStr); }
         catch (IllegalArgumentException e) { return new Response(StatusCode.BAD_REQUEST, "Invalid room type."); }
 
+        // El Manager decide el estado inicial — el Controller no conoce la lógica de transición
         Hospitalization h = hospitalizationManager.createRequest(patient, doctor, date, reason, roomType, observations);
         return new Response(StatusCode.OK, "Hospitalization requested. ID: " + h.getId());
     }
@@ -88,6 +84,7 @@ public class HospitalizationController {
         try { roomType = RoomType.fromDisplayName(roomTypeStr); }
         catch (IllegalArgumentException e) { return new Response(StatusCode.BAD_REQUEST, "Invalid room type."); }
 
+        // createDirect arranca en ONGOING directamente, a diferencia de createRequest — mismo Controller, distinta rama del Manager
         Hospitalization h = hospitalizationManager.createDirect(patient, doctor, date, reason, roomType, observations);
         return new Response(StatusCode.OK, "Hospitalization started. ID: " + h.getId());
     }
@@ -105,6 +102,7 @@ public class HospitalizationController {
         try { roomType = RoomType.fromDisplayName(roomTypeStr); }
         catch (IllegalArgumentException e) { return new Response(StatusCode.BAD_REQUEST, "Invalid room type."); }
 
+        // El Manager extrae paciente y doctor de la cita — el Controller no necesita buscarlos por separado
         Hospitalization h = hospitalizationManager.createFromAppointment(aOpt.get(), date, reason, roomType, observations);
         return new Response(StatusCode.OK, "Hospitalization started. ID: " + h.getId());
     }
@@ -112,6 +110,7 @@ public class HospitalizationController {
     public Response approve(String hospId) {
         Optional<Hospitalization> opt = hospitalizationRepository.findById(hospId);
         if (opt.isEmpty()) return new Response(StatusCode.NOT_FOUND, "Hospitalization not found.");
+        // La transición REQUESTED → ONGOING la valida el Manager internamente; si falla retorna false
         if (!hospitalizationManager.approve(opt.get()))
             return new Response(StatusCode.BAD_REQUEST, "Only REQUESTED hospitalizations can be approved.");
         return new Response(StatusCode.OK, "Hospitalization approved.");
@@ -139,6 +138,7 @@ public class HospitalizationController {
         return new Response(StatusCode.OK, "OK", arr);
     }
 
+    // Este endpoint solo expone las hospitalizaciones pendientes de aprobación — el filtro lo hace el stream, no el repositorio
     public Response getAllIds() {
         JSONArray arr = new JSONArray();
         hospitalizationRepository.getAll().stream()
@@ -150,6 +150,7 @@ public class HospitalizationController {
     public void addObserver(ModelObserver observer)    { hospitalizationManager.addObserver(observer); }
     public void removeObserver(ModelObserver observer) { hospitalizationManager.removeObserver(observer); }
 
+    // Retorna null en lugar de lanzar excepción — simplifica el flujo de validación en los métodos públicos
     private LocalDate parseDate(String dateStr) {
         if (!DATE_PATTERN.matcher(dateStr).matches()) return null;
         try { return LocalDate.parse(dateStr); } catch (DateTimeParseException e) { return null; }
@@ -163,6 +164,7 @@ public class HospitalizationController {
         o.put("doctorName", h.getDoctor().getFirstname() + " " + h.getDoctor().getLastname());
         o.put("doctorId", h.getDoctor().getId());
         o.put("date", h.getDate().toString());
+        // Campos opcionales con fallback a string vacío para no enviar nulls al cliente
         o.put("reason", h.getReason() != null ? h.getReason() : "");
         o.put("roomType", h.getRoomType().name());
         o.put("observations", h.getObservations() != null ? h.getObservations() : "");

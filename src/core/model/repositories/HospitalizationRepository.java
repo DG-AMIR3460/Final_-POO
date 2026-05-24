@@ -14,8 +14,10 @@ public class HospitalizationRepository implements IHospitalizationRepository {
 
     private final List<Hospitalization> hospitalizations = new ArrayList<>();
     private final List<ModelObserver> observers = new ArrayList<>();
+    // Mismo esquema de contadores por paciente que AppointmentRepository — el ID codifica a quién pertenece la hospitalización
     private final Map<Long, Integer> counters = new HashMap<>();
 
+    // El prefijo "H-" distingue los IDs de hospitalización de los de cita ("A-") cuando ambos circulan por el sistema
     public String generateId(long patientId) {
         int n = counters.getOrDefault(patientId, 0);
         counters.put(patientId, n + 1);
@@ -24,6 +26,7 @@ public class HospitalizationRepository implements IHospitalizationRepository {
 
     public boolean add(Hospitalization h) {
         boolean added = hospitalizations.add(h);
+        // La notificación solo ocurre si el elemento se agregó efectivamente — evita actualizaciones de vista falsas
         if (added) notifyObservers();
         return added;
     }
@@ -32,6 +35,7 @@ public class HospitalizationRepository implements IHospitalizationRepository {
         return hospitalizations.stream().filter(h -> h.getId().equals(id)).findFirst();
     }
 
+    // Copia defensiva para que el llamador no pueda alterar la colección interna directamente
     public List<Hospitalization> getAll() { return new ArrayList<>(hospitalizations); }
 
     public List<Hospitalization> getByPatient(long patientId) {
